@@ -1,4 +1,5 @@
 import tensorflow as tf
+import os
 def tensorflow_demo():
     """
     TensorFlow的基本结构
@@ -213,6 +214,9 @@ def linear_regression():
     #3_合并变量
     merge = tf.summary.merge_all()
 
+    #创建saver
+    saver = tf.train.Saver()
+
     #显式的初始化变量
     init = tf.global_variables_initializer()
 
@@ -229,15 +233,23 @@ def linear_regression():
                                                                   bias.eval(), error.eval()))
 
         #开始训练
-        for i in range(1000):
-            sess.run(optimizer)
-            print("训练第 %d 次后模型参数的值weight-init:%f, bias-init:%f，error：%f" % (i + 1,
-                                                                            weight.eval(), bias.eval(), error.eval()))
-            #运行合并变量操作
-            summary = sess.run(merge)
-            #将每次迭代后的事件写入事件文件
-            file_writer.add_summary(summary,i)
+        # for i in range(1000):
+        #     sess.run(optimizer)
+        #     print("训练第 %d 次后模型参数的值weight-init:%f, bias-init:%f，error：%f" % (i + 1,
+        #                                                                     weight.eval(), bias.eval(), error.eval()))
+        #     #运行合并变量操作
+        #     summary = sess.run(merge)
+        #     #将每次迭代后的事件写入事件文件
+        #     file_writer.add_summary(summary, i)
+        #     #保存模型
+        #     if i % 100 == 0:
+        #         saver.save(sess, "./tmp/model/my_linear.ckpt")
 
+        #加载模型
+        if os.path.exists("./tmp/model/checkpoint"):
+            saver.restore(sess,"./tmp/model/my_linear.ckpt")
+        print("训练后模型参数的值weight:%f, bias:%f，error：%f" % (weight.eval(),
+                                                     bias.eval(), error.eval()))
     return None
 
 if __name__ == '__main__':
