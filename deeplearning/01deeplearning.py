@@ -184,22 +184,34 @@ def linear_regression():
     自实现一个线性回归
     :return:
     """
-    #1)准备数据
-    x = tf.random_normal(shape=[100, 1])
-    y_true = tf.matmul(x,[[0.8]]) + 0.7
+    with tf.variable_scope("prepare_data"):
+        #1)准备数据
+        x = tf.random_normal(shape=[100, 1],  name="feature")
+        y_true = tf.matmul(x,[[0.8]]) + 0.7
 
-    #2）构造模型
-    #定义模型参数 用 变量
-    weight = tf.Variable(initial_value=tf.random_normal(shape=[1, 1]))
-    # weight = tf.Variable(initial_value=tf.random_normal(shape=[1, 1]), trainable=False)
-    bias = tf.Variable(initial_value=tf.random_normal(shape=[1, 1]))
-    y_predict = tf.matmul(x, weight) + bias
+    with tf.variable_scope("create_model"):
+        #2）构造模型
+        #定义模型参数 用 变量
+        weight = tf.Variable(initial_value=tf.random_normal(shape=[1, 1]), name="Weight")
+        # weight = tf.Variable(initial_value=tf.random_normal(shape=[1, 1]), trainable=False)
+        bias = tf.Variable(initial_value=tf.random_normal(shape=[1, 1]), name="bias")
+        y_predict = tf.matmul(x, weight) + bias
 
-    #3）构造损失函数
-    error = tf.reduce_mean(tf.square(y_predict - y_true))
+    with tf.variable_scope("loss_function"):
+        #3）构造损失函数
+        error = tf.reduce_mean(tf.square(y_predict - y_true))
 
-    #4）优化损失
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.1).minimize(error)
+    with tf.variable_scope("optimizer"):
+        #4）优化损失
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(error)
+
+    #2_收集变量
+    tf.summary.scalar("error", error)
+    tf.summary.histogram("weight", weight)
+    tf.summary.histogram("bias", bias)
+
+    #3_合并变量
+    merge = tf.summary.merge_all()
 
     #显式的初始化变量
     init = tf.global_variables_initializer()
@@ -208,15 +220,23 @@ def linear_regression():
     with tf.Session() as sess:
         #初始化变量
         sess.run(init)
+
+        #1_创建事件文件
+        file_writer = tf.summary.FileWriter("./tmp/linear", graph=sess.graph)
+
         #查看初始化模型参数的值
         print("初始化模型参数的值weight-init:%f, bias-init:%f，error：%f" % (weight.eval(),
                                                                   bias.eval(), error.eval()))
 
         #开始训练
-        for i in range(100):
+        for i in range(1000):
             sess.run(optimizer)
             print("训练第 %d 次后模型参数的值weight-init:%f, bias-init:%f，error：%f" % (i + 1,
                                                                             weight.eval(), bias.eval(), error.eval()))
+            #运行合并变量操作
+            summary = sess.run(merge)
+            #将每次迭代后的事件写入事件文件
+            file_writer.add_summary(summary,i)
 
     return None
 
