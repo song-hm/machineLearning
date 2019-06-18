@@ -252,6 +252,27 @@ def linear_regression():
                                                      bias.eval(), error.eval()))
     return None
 
+#1）定义命令行参数
+tf.app.flags.DEFINE_integer("max_step", 100, "训练模型的步数")
+tf.app.flags.DEFINE_string("model_dir", "Unknown", "模型保存的路径+模型名字")
+
+# 2）简化变量名
+FLAGS = tf.app.flags.FLAGS
+
+def command_demo():
+    """
+    命令行参数演示
+    :return:
+    """
+    print("max_step:\n",FLAGS.max_step)
+    print("model_dir:\n",FLAGS.model_dir)
+
+    return None
+
+def main(argv):
+    print(argv)
+    return None
+
 if __name__ == '__main__':
     #TensorFlow的基本结构
     # tensorflow_demo()
@@ -264,7 +285,7 @@ if __name__ == '__main__':
     #变量的演示
     # variable_demo()
     #自实现一个线性回归
-    linear_regression()
-
-
-
+    # linear_regression()
+    #命令行参数演示
+    # command_demo()
+    tf.app.run()
